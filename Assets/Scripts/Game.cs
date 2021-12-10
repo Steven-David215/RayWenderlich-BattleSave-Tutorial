@@ -214,7 +214,37 @@ public class Game : MonoBehaviour
 
     public void SaveAsJSON()
     {
+        Save save = CreateSaveGameObject();
+        string json = JsonUtility.ToJson(save);
 
+        var savePath = System.IO.Path.Combine(Application.dataPath, "sample.json");
+        System.IO.File.WriteAllText(savePath, json);
+
+        Debug.Log("Level saved to " + savePath);
+        Debug.Log("Saving as JSON: " + json);
+    }
+
+    public void LoadJSON()
+    {
+        var savePath = System.IO.Path.Combine(Application.dataPath, "sample.json");
+        string json = System.IO.File.ReadAllText(savePath);
+
+        Save save = JsonUtility.FromJson<Save>(json);
+
+        for (int i = 0; i < save.livingTargetPositions.Count; i++)
+        {
+            int position = save.livingTargetPositions[i];
+            Target target = targets[position].GetComponent<Target>();
+            target.ActivateRobot((RobotTypes)save.livingTargetsTypes[i]);
+            target.GetComponent<Target>().ResetDeathTimer();
+        }
+
+        shotsText.text = "Shots: " + save.shots;
+        hitsText.text = "Hits: " + save.hits;
+        shots = save.shots;
+        hits = save.hits;
+
+        Unpause();
     }
 
     private Save CreateSaveGameObject()
